@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加题目</title>
+    <script src="../js/axios.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div align="center">
+            <a href="http://localhost:8081/index.html" style="margin:60px;">首页</a>
+            <a href="http://localhost:8081/user/center.html" style="margin:60px;">个人中心</a>
+            <a href="http://localhost:8081/problem/list.html" style="margin:60px;">题库</a>
+            <h1>添加题目</h1>
+            <label>题目名字:
+                <input v-model="pname">
+            </label><br>
+            <label>限定运行时间（秒为单位）:
+                <input v-model="ptime">
+            </label><br>
+            <div>问题描述:</div><br>
+            <textarea rows="30" cols="100" v-model="question"></textarea><br>
+        </div>
+        <div align="center">
+            <div style="display: inline-block;">样例输入</div>
+            <div><input type="file" accept="text/plain" id="stdin0"></div><br>
+            <div style="display: inline-block;">样例输出</div>
+            <div><input type="file" accept="text/plain" id="stdout0"></div><br>
+            <div style="display: inline-block;">测试输入(可选择多个txt文件)</div>
+            <div><input type="file" multiple="multiple" accept="text/plain" id="stdin"></div><br>
+            <div style="display: inline-block;">测试输出(可选择多个txt文件)</div>
+            <div><input type="file" multiple="multiple" accept="text/plain" id="stdout"></div><br>
+            <button @click="submit">提交</button>
+            <div>{{statement}}</div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type = "text/javascript">
+        const app = {
+            data() {
+                return {
+                    pname: '',
+                    ptime: '',
+                    question: "",
+                    statement:"",
+                }
+            },
+            methods: {
+                getCookie(name) {
+                    let reg = RegExp(name + '=([^;]+)')
+                    let arr = document.cookie.match(reg)
+                    if (arr) {
+                        return arr[1]
+                    } else {
+                        return ''
+                    }
+                },
+                submit: function () {
+                    var that=this;
+                    var params = new FormData();
+                    var stdin0= document.getElementById("stdin0").files[0];
+                    var stdout0= document.getElementById("stdout0").files[0];
+                    var stdin = document.getElementById("stdin").files;
+                    var stdout= document.getElementById("stdout").files;
+                    console.log(stdin0)
+
+                    params.append("stdin0",stdin0);
+                    params.append("stdout0",stdout0);
+                    for(var i=0;i<stdin.length;i++){
+                        params.append("stdin",stdin[i]);
+                    }
+                    for(var i=0;i<stdout.length;i++){
+                        params.append("stdout",stdout[i]);
+                    }
+                    params.append('pname',that.pname);
+                    params.append('ptime',that.ptime);
+                    params.append('question',that.question);
+                    params.append('id',this.getCookie('uid'))
+                    console.log(params);
+                    axios({
+                        method: 'post',
+                        url: 'http://localhost:8081/problems/addproblem',
+                        headers: {
+                            'Content-type': 'application/x-www-form-urlencoded;charset=UTf-8'
+                        },
+                        data: params
+                    }).then(function (response) {
+                        console.log(response.data);
+                        that.flag=response.data.flag;
+                        that.statement=response.data.statement;
+                    });
+                }
+            }
+        }
+        Vue.createApp(app).mount('#app')
+    </script>
+</body>
+</html>

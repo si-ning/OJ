@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>注册</title>
+    <script src="../js/axios.js"></script>
+    <style type="text/css">
+        fieldset
+        {
+            margin:30px auto;
+            width:300px;
+            height:300px;
+            padding:20px;
+            color:blue;
+            text-align:center;
+        }
+
+        /*label部分CSS才是重点*/
+        label
+        {
+            display: inline-block;
+            width: 60px;
+            text-align: justify;
+            text-align-last: justify;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"  align="center">
+        <a href="http://localhost:8081/index.html" style="margin:60px;">首页</a>
+        <a href="http://localhost:8081/user/center.html" style="margin:60px;">个人中心</a>
+        <a href="http://localhost:8081/problem/list.html" style="margin:60px;">题库</a>
+        <form>
+            <fieldset>
+                <legend>用户注册</legend>
+                <br><br>
+                <label>用户名</label>
+                <input type="text" v-model="name"><br><br>
+                <label>密&nbsp;&nbsp;码</label>
+                <input type="password" v-model="pwd"><br><br><br>
+                <input type="button" value="提交注册" @click="add"><input type="button" value="重置" @click="reset"><br>
+                <div align="center" v-show="flag">{{message}}</div><br>
+                <a v-show="ok" style="color:red;" href="http://localhost:8081/login.html">注册成功，点击跳转到登录页面</a><br>
+            </fieldset>
+        </form>
+    </div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const app = {
+            data() {
+                return {
+                    name: '',
+                    pwd: '',
+                    message: '',
+                    flag: false,
+                    ok: false
+                }
+            },
+            methods: {
+                add(){
+                    var that=this;
+                    that.message="";
+                    axios({
+                        method: 'post',
+                        url: 'http://localhost:8081/user/add',
+                        data: {
+                            username: this.name,
+                            password: this.pwd,
+                        }
+                    }).then(function (response) {
+                        if(response.data.flag){
+                            that.ok=true;
+                        }
+                        else{
+                            that.flag=true;
+                            that.message=response.data.statement;
+                        }
+                    });
+                },
+                reset(){
+                    var that=this;
+                    that.flag=false;
+                    that.ok=false;
+                    that.pwd="";
+                    that.message="";
+                    that.name="";
+                }
+            }
+        }
+        Vue.createApp(app).mount('#app')
+    </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>登录</title>
+    <script src="js/axios.js"></script>
+    <style type="text/css">
+        fieldset
+        {
+            margin:30px auto;
+            width:300px;
+            height:300px;
+            padding:20px;
+            color:blue;
+            text-align:center;
+        }
+
+        /*label部分CSS才是重点*/
+        label
+        {
+            display: inline-block;
+            width: 60px;
+            text-align: justify;
+            text-align-last: justify;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="app" align="center">
+    <a href="http://localhost:8081/index.html" style="margin:60px;">首页</a>
+    <a href="http://localhost:8081/user/center.html" style="margin:60px;">个人中心</a>
+    <a href="http://localhost:8081/problem/list.html" style="margin:60px;">题库</a>
+    <form>
+        <fieldset>
+            <legend>用户登录</legend>
+            <br><br>
+            <label>用户名</label>
+            <input type="text" v-model="name"><br><br>
+            <label>密&nbsp;&nbsp;码</label>
+            <input type="password" v-model="pwd"><br><br><br>
+            <input type="button" value="登录" @click="add"><input type="button" value="重置" @click="reset"><br>
+            <div>{{statement}}</div><br>
+            <a v-show="ok" style="color:red;" href="http://localhost:8081/index.html">登录成功，点击跳转到首页</a><br>
+            <a href="http://localhost:8081/user/adduser.html">没有账号，注册账号？</a><br>
+        </fieldset>
+    </form>
+
+</div>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script type = "text/javascript">
+    const app = {
+        data() {
+            return {
+                name: '',
+                pwd: '',
+                flag: false,
+                statement: '',
+                ok: false
+            }
+        },
+        methods: {
+            add: function () {
+                var that=this;
+                axios({
+                    method: 'post',
+                    url: 'http://localhost:8081/login',
+                    data: {
+                        username: that.name,
+                        password: that.pwd,
+                    }
+                }).then(function (response) {
+                    console.log(response.data.flag),
+                    that.flag=response.data.flag,
+                    that.statement=response.data.statement;
+                    that.ok=!that.flag;
+                });
+            },
+            reset: function (){
+                var that=this;
+                that.flag=false;
+                that.ok=false;
+                that.statement="";
+                that.name="";
+                that.pwd="";
+            }
+
+        }
+    }
+    Vue.createApp(app).mount('#app')
+</script>
+<script>
+
+</script>
+</body>
+</html>

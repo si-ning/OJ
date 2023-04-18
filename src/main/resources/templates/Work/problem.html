@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>题目详情</title>
+    <script src="http://localhost:8081/js/axios.js"></script>
+</head>
+<body>
+<div id="app">
+    <div align="center">
+        <a href="http://localhost:8081/index.html" style="margin:60px;">首页</a>
+        <a href="http://localhost:8081/user/center.html" style="margin:60px;">个人中心</a>
+        <a href="http://localhost:8081/problem/list.html" style="margin:60px;">题库</a>
+        <a href="http://localhost:8081/Work/work.html" style="margin:60px;">作业</a>
+        <h1 >{{pname}}</h1>
+        <div align="center">运行时间限制:{{ptime}}秒</div>
+        <div align="center">问题描述：<br>{{que}}</div>
+        <div>样例输入</div>
+        <div>{{stdin}}</div>
+        <div>样例输出</div>
+        <div>{{stdout}}</div>
+    </div>
+    <div align="center">
+        <select v-model="type">
+            <option value="2">java</option>
+            <option value="1">C/C++</option>
+            <option value="3">python</option>
+        </select><br>
+        <textarea rows="30" cols="100" v-model="code">{{code}}</textarea><br>
+        <button @click="submit">提交代码</button>
+        <div>{{message}}</div>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+    const app = {
+        data() {
+            return {
+                pid: "",
+                pname: "111",
+                que: "111",
+                stdin: "111",
+                stdout: "111",
+                code: "",
+                ptime: 1,
+                message: "",
+                show: false,
+                type: 2,
+                wname: ""
+            }
+        },
+        methods: {
+            getCookie(name) {
+                let reg = RegExp(name + '=([^;]+)');
+                let arr = document.cookie.match(reg);
+                if (arr) {
+                    return arr[1];
+                } else {
+                    return '';
+                }
+            },
+            submit: function (){
+                var that=this;
+                axios({
+                    method:'post',
+                    url:'http://localhost:8081/work/submit',
+                    data:{
+                        code: that.code,
+                        pid: that.pid,
+                        id: that.getCookie('uid'),
+                        type: that.type,
+                        wname: that.wname
+                    }
+                }).then(function (response){
+                    const result = response.data;
+                    if(result.flag==1){
+                        that.message="题目错误，如果不曾提交修改数据请联系管理员";
+                    }
+                    else if(result.flag==2){
+                        that.message="请先登录或加入该作业";
+                    }
+                    else{
+                        if(result.resoult==0){
+                            that.message="成功解决该题";
+                        }
+                        else if(result.resoult==1){
+                            that.message="编译出错，请重新提交";
+                        }
+                        else if(result.resoult==2){
+                            that.message="结果出错，请检查逻辑是否出错";
+                        }
+                        else if(result.resoult==4){
+                            that.message="运行超时，请优化算法";
+                        }
+                        else if(result.resoult==3){
+                            that.message="运行出错，请检查代码逻辑";
+                        }
+                    }
+                })
+            }
+        },
+        mounted() {
+            var that=this;
+            that.pid=[[${pid}]];
+            that.wname='[[${wname}]]';
+            console.log(that.wname);
+            that.code="//需要自己导入包，类名不能修改和main方法必写\n" +
+                "public class test" +this.pid+"{\n" +
+                "    public static void main(String []args){\n" +
+                "        //代码写在这\n" +
+                "    }\n" +
+                "}",
+                axios({
+                    method:'post',
+                    url:'http://localhost:8081/problems/getquestion',
+                    data:{
+                        pid: that.pid
+                    }
+                }).then(function (response){
+                    const result = response.data;
+                    that.pname=result.pname;
+                    that.stdin=result.stdin;
+                    that.stdout=result.stdout;
+                    that.que=result.que;
+                    that.ptime=result.ptime;
+                })
+        }
+    }
+    Vue.createApp(app).mount('#app');
+</script>
+</body>
+</html>

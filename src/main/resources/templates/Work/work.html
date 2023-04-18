@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>作业列表</title>
+    <script src="../js/axios.js"></script>
+</head>
+<body>
+  <div id="app" align="center">
+    <h1 align="center">作业列表</h1>
+    <div align="center">
+      <a href="http://localhost:8081/index.html" style="margin:60px;">首页</a>
+      <a href="http://localhost:8081/user/center.html" style="margin:60px;">个人中心</a>
+      <a href="http://localhost:8081/Work/add.html" style="margin:60px;">添加作业</a>
+    </div>
+    <table align="center">
+      <tbody>
+      <tr>
+        <td width="200">#</td>
+        <td width="200">作业名字</td>
+      </tr>
+      <tr v-for="(item,index) in list">
+        <td width="100">{{index+1}}</td>
+        <td width="300"><a :href="'http://localhost:8081/page/work/detail/'+item.wname">{{item.wname}}</a></td>
+      </tr>
+      </tbody>
+    </table>
+    <div align="center">
+      <button @click="last">上一页</button>
+      <div style="display: inline-block;" v-model="page_num">{{page_num}}</div>
+      <button @click="next">下一页</button>
+      <div style="color: red" v-model="message">{{message}}</div>
+    </div>
+
+  </div>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script>
+    const app = {
+      data() {
+        return {
+          page_num:1,
+          size:5,
+          list: [],
+          message:"",
+        }
+      },
+      methods: {
+        next(){
+          var that=this;
+          that.page_num=that.page_num+1;
+          that.message="";
+          axios({
+            method:'post',
+            url:'http://localhost:8081/work/home',
+            data:{
+              page_num: that.page_num,
+              size: that.size
+            }
+          }).then(function (response){
+            console.log(response.data);
+            const result = response.data;
+            if(that.page_num>result.page_num){
+              that.message="已经是最后一页"
+              that.page_num=result.page_num
+            }
+            that.list=[];
+            result.works.forEach(item=>{
+              that.list.push(item)
+            })
+          })
+        },
+        last(){
+          var that=this;
+          that.page_num=that.page_num-1;
+          that.message="";
+          axios({
+            method:'post',
+            url:'http://localhost:8081/work/home',
+            data:{
+              page_num: that.page_num,
+              size: that.size
+            }
+          }).then(function (response){
+            console.log(response.data);
+            const result = response.data;
+            if(that.page_num<result.page_num){
+              that.message="已经是第一页了";
+              that.page_num=1
+            }
+            that.list=[];
+            result.works.forEach(item=>{
+              that.list.push(item)
+            })
+            console.log(that.list)
+          })
+        }
+
+      },
+      mounted(){
+        var that=this;
+        axios({
+          method:'post',
+          url:'http://localhost:8081/work/home',
+          data:{
+            page_num: that.page_num,
+            size: that.size
+          }
+        }).then(function (response){
+          console.log(response.data);
+          const result = response.data;
+          result.works.forEach(item=>{
+            that.list.push(item)
+          })
+          console.log(that.list)
+        })
+      }
+    }
+    Vue.createApp(app).mount('#app')
+  </script>
+</body>
+</html>

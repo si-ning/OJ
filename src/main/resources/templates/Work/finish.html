@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>作业完成情况</title>
+    <script src="http://localhost:8081/js/axios.js"></script>
+</head>
+<body>
+    <div id="app" align="center">
+      <a href="http://localhost:8081/index.html" style="margin:60px;">首页</a>
+      <a href="http://localhost:8081/user/center.html" style="margin:60px;">个人中心</a>
+      <a href="http://localhost:8081/Work/work.html" style="margin:60px;">作业</a>
+
+      <table align="center">
+        <tbody>
+        <tr>
+          <td width="200">用户名</td>
+          <td width="200" v-for="(iteam,index) in pname">{{iteam}}</td>
+        </tr>
+        <tr v-for="(iteam,index) in userfinishList">
+          <td width="200">{{iteam.uname}}</td>
+          <td width="200" v-for="(iteam1,index1) in iteam.accept">{{iteam1}}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+      const app = {
+        data() {
+          return {
+            uname: [],
+            pname:[],
+            userfinishList:[],
+            message:"",
+            wname:'',
+            uid:''
+          }
+        },
+        methods: {
+          getCookie(name) {
+            let reg = RegExp(name + '=([^;]+)');
+            let arr = document.cookie.match(reg);
+            if (arr) {
+              return arr[1];
+            } else {
+              return '';
+            }
+          }
+        },
+        mounted(){
+          var that=this;
+          that.uid = that.getCookie('uid');
+          that.wname = '[[${wname}]]';
+          console.log(that.wname);
+          axios({
+            method:'post',
+            url:'http://localhost:8081/work/finish',
+            data:{
+              uid: that.uid,
+              wname: that.wname
+            }
+          }).then(function (response){
+            console.log(response.data);
+            const result = response.data;
+            result.uname.forEach(item=>{
+              that.uname.push(item)
+            })
+            result.pname.forEach(item=>{
+              that.pname.push(item)
+            })
+            result.userfinishList.forEach(item=>{
+              that.userfinishList.push(item);
+              console.log(item.uname)
+            })
+            console.log(that.uname);
+              console.log(that.pname);
+              console.log(that.userfinishList);
+          })
+        }
+      }
+      Vue.createApp(app).mount('#app')
+    </script>
+</body>
+</html>

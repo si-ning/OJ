@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加作业</title>
+    <script src="http://localhost:8081/js/axios.js"></script>
+</head>
+<body>
+    <div id="app" align="center">
+        <a href="http://localhost:8081/index.html" style="margin:60px;">首页</a>
+        <a href="http://localhost:8081/user/center.html" style="margin:60px;">个人中心</a>
+        <a href="http://localhost:8081/Work/work.html" style="margin:60px;">作业</a>
+        <h3>添加作业</h3>
+        <div>
+            <label>作业名</label>
+            <input type="text" v-model="wname" placeholder="请输入作业名字">
+        </div>
+        <div v-for="(iteam,index) in pnames">
+            <label>题目{{index}}</label>
+            <input type="text" v-model="pnames[index]" placeholder="输入要添加的题库中的题目名"><br>
+        </div>
+        <div>{{statement}}</div>
+        <input type="button" @click="add" value="添加题目"><br>
+        <input type="button" @click="submit" value="提交注册作业"><br>
+
+
+    </div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type = "text/javascript">
+        const app = {
+            data() {
+                return {
+                    pnames: ["",""],
+                    wname: '',
+                    uid: "",
+                    statement:"",
+                }
+            },
+            methods: {
+                getCookie(name) {
+                    let reg = RegExp(name + '=([^;]+)')
+                    let arr = document.cookie.match(reg)
+                    if (arr) {
+                        return arr[1]
+                    } else {
+                        return ''
+                    }
+                },
+                add: function () {
+                    var that=this;
+                    that.pnames.push("");
+                },
+                submit: function () {
+                    var that=this;
+                    that.uid=that.getCookie('uid');
+                    axios({
+                        method: 'post',
+                        url: 'http://localhost:8081/work/add',
+                        data: {
+                            wname: that.wname,
+                            pnames: that.pnames,
+                            uid: that.uid
+                        }
+                    }).then(function (response) {
+                        console.log(response.data);
+                        that.flag=response.data.flag;
+                        that.statement=response.data.statement;
+                    });
+                }
+            }
+        }
+        Vue.createApp(app).mount('#app')
+    </script>
+</body>
+</html>

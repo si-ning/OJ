@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人中心</title>
+    <script src="../js/axios.js"></script>
+</head>
+<body>
+<div id="app">
+    <h1 align="center">个人中心</h1>
+    <div align="center">
+        <a href="http://localhost:8081/index.html" style="margin:60px;">首页</a>
+        <a href="http://localhost:8081/problem/list.html" style="margin:60px;">题库</a>
+        <a href="../login.html" style="margin: 60px;">登录</a>
+    </div>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td width="200">#</td>
+            <td width="200">题目名</td>
+            <td width="300">状态</td>
+            <td width="300">提交时间</td>
+        </tr>
+        <tr v-for="(item,index) in list">
+            <td width="100">{{index+1}}</td>
+            <td width="300"><a :href="'http://localhost:8081/page/problems/'+item.pid">{{item.pname}}</a></td>
+            <td width="300">{{item.resoult}}</td>
+            <td width="300">{{item.stime}}</td>
+        </tr>
+        </tbody>
+    </table>
+    <div align="center">
+        <button @click="last">上一页</button>
+        <div style="display: inline-block;" v-model="page_num">{{page_num}}</div>
+        <button @click="next">下一页</button>
+        <div style="color: red">{{message}}</div>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+    const app = {
+        data() {
+            return {
+                page_num:1,
+                size:5,
+                list: [],
+                message:"",
+                accept:""
+            }
+        },
+        methods: {
+            getCookie(name) {
+                let reg = RegExp(name + '=([^;]+)')
+                let arr = document.cookie.match(reg)
+                if (arr) {
+                    return arr[1]
+                } else {
+                    return ''
+                }
+            },
+            next(){
+                var that=this;
+                that.page_num=that.page_num+1;
+                that.message="";
+                axios({
+                    method:'post',
+                    url:'http://localhost:8081/user/getsubmit',
+                    data:{
+                        page_num: that.page_num,
+                        size: that.size,
+                        id: this.getCookie('uid'),
+                    }
+                }).then(function (response){
+                    console.log(response.data);
+                    const result = response.data;
+                    if(that.page_num>result.page_num){
+                        that.message="已经是最后一页"
+                        that.page_num=result.page_num
+                    }
+                    that.list=[];
+                    result.submitList.forEach(item=>{
+                        that.list.push(item)
+                    })
+                })
+            },
+            last(){
+                var that=this;
+                that.page_num=that.page_num-1;
+                that.message="";
+                axios({
+                    method:'post',
+                    url:'http://localhost:8081/user/getsubmit',
+                    data:{
+                        page_num: that.page_num,
+                        size: that.size,
+                        id: this.getCookie('uid'),
+                    }
+                }).then(function (response){
+                    console.log(response.data);
+                    const result = response.data;
+                    if(that.page_num<result.page_num){
+                        that.message="已经是第一页了";
+                        that.page_num=1
+                    }
+                    that.list=[];
+                    result.submitList.forEach(item=>{
+                        that.list.push(item)
+                    })
+                    console.log(that.list)
+                })
+            }
+
+        },
+        mounted(){
+            var that=this;
+            console.log(that.getCookie("uid"));
+            console.log("---------------------")
+            axios({
+                method:'post',
+                url:'http://localhost:8081/user/getsubmit',
+                data:{
+                    page_num: that.page_num,
+                    size: that.size,
+                    id: that.getCookie('uid'),
+                }
+            }).then(function (response){
+                console.log(response.data);
+                const result = response.data;
+                that.message=result.message;
+                result.submitList.forEach(item=>{
+                    that.list.push(item)
+                })
+                console.log(that.list)
+            })
+        }
+    }
+    Vue.createApp(app).mount('#app')
+</script>
+</body>
+</html>
